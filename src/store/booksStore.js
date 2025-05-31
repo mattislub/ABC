@@ -25,10 +25,8 @@ const useBooksStore = create((set) => ({
   searchBooks: async (query) => {
     try {
       set({ loading: true, error: null });
-      
-      let supabaseQuery = supabase
-        .from('books')
-        .select('*');
+
+      let supabaseQuery = supabase.from('books').select('*');
 
       if (query) {
         supabaseQuery = supabaseQuery.or(
@@ -36,8 +34,7 @@ const useBooksStore = create((set) => ({
         );
       }
 
-      const { data, error } = await supabaseQuery
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabaseQuery.order('created_at', { ascending: false });
 
       if (error) throw handleSupabaseError(error);
       set({ books: data || [], loading: false });
@@ -71,10 +68,13 @@ const useBooksStore = create((set) => ({
         .eq('is_new_in_market', true)
         .order('created_at', { ascending: false });
 
+      console.log('📦 Supabase new in market data:', data);
+      console.log('⚠️ Supabase error (if any):', error);
+
       if (error) throw handleSupabaseError(error);
       return data || [];
     } catch (error) {
-      console.error('Error fetching new in market:', error);
+      console.error('❌ Error fetching new in market books:', error);
       throw error;
     }
   },
@@ -89,8 +89,8 @@ const useBooksStore = create((set) => ({
 
       if (error) throw handleSupabaseError(error);
 
-      set(state => ({
-        books: [data, ...state.books]
+      set((state) => ({
+        books: [data, ...state.books],
       }));
       return { success: true, data };
     } catch (error) {
@@ -110,10 +110,10 @@ const useBooksStore = create((set) => ({
 
       if (error) throw handleSupabaseError(error);
 
-      set(state => ({
-        books: state.books.map(book => 
+      set((state) => ({
+        books: state.books.map((book) =>
           book.id === id ? data : book
-        )
+        ),
       }));
       return { success: true, data };
     } catch (error) {
@@ -124,22 +124,19 @@ const useBooksStore = create((set) => ({
 
   deleteBook: async (id) => {
     try {
-      const { error } = await supabase
-        .from('books')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('books').delete().eq('id', id);
 
       if (error) throw handleSupabaseError(error);
 
-      set(state => ({
-        books: state.books.filter(book => book.id !== id)
+      set((state) => ({
+        books: state.books.filter((book) => book.id !== id),
       }));
       return { success: true };
     } catch (error) {
       console.error('Error deleting book:', error);
       return { success: false, error };
     }
-  }
+  },
 }));
 
 export default useBooksStore;
